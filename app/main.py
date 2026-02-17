@@ -1,18 +1,25 @@
 from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import boto3
 import random
-from decimal import Decimal
-from app.models import CustomerInput
+from app.models import CustomerInput, CustomerRawInput
 from app.risk_engine import calculate_risk
+from app.predict_engine import predict_from_raw_input
+from app.model_metrics_engine import get_model_metrics
+from app.production_inference_engine import (
+    get_customers_sample as get_customers_sample_inference,
+    get_customer as get_customer_inference,
+    get_customer_explanation as get_customer_explanation_inference,
+)
 from app.aws_clients import (
     save_risk_record,
     save_behavior_profile,
     send_alert
 )
 from app.config import AWS_REGION, DYNAMODB_RISK_TABLE
-from app.aws_clients import get_risk_record
 
 
 
@@ -69,6 +76,43 @@ def analyze_customer(customer: CustomerInput):
 
 
 # -------------------------
+# Predict From Raw Customer Data
+# -------------------------
+@app.post("/predict")
+def predict_customer_risk(customer: CustomerRawInput):
+    try:
+        probability, risk_level, top_features = predict_from_raw_input(customer)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {exc}")
+
+    return {
+        "customer_id": customer.customer_id,
+        "probability_score": round(probability, 4),
+        "risk_level": risk_level,
+        "top_3_contributing_features": top_features,
+    }
+
+
+# -------------------------
+# Model Metrics
+# -------------------------
+@app.get("/model-metrics")
+def model_metrics():
+    try:
+        return get_model_metrics()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to compute model metrics: {exc}")
+
+
+# -------------------------
 # Portfolio Summary
 # -------------------------
 @app.get("/portfolio-summary")
@@ -101,17 +145,15 @@ def portfolio_summary():
 # All Customers
 # -------------------------
 @app.get("/customers")
-def get_customers():
-
-    response = risk_table.scan()
-    items = response.get("Items", [])
-
-    # Convert Decimal to float
-    for item in items:
-        if isinstance(item["risk_score"], Decimal):
-            item["risk_score"] = float(item["risk_score"])
-
-    return items
+def get_customers(
+    limit: int = Query(200, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    mode: str = Query("top_risk"),
+):
+    try:
+        return get_customers_sample_inference(limit=limit, offset=offset, mode=mode)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to load customers sample: {exc}")
 
 
 # -------------------------
@@ -185,12 +227,18 @@ def get_aggregator(customer_id: str):
     }
 
 
+@app.get("/customers/{customer_id}/explain")
+def get_customer_explain(customer_id: str):
+    explanation = get_customer_explanation_inference(customer_id)
+    if not explanation:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return explanation
+
+
 @app.get("/customers/{customer_id}")
 def get_customer(customer_id: str):
-    record = get_risk_record(customer_id)
-
-    if not record:
-        return {"error": "Customer not found"}
-
-    return record
+    customer = get_customer_inference(customer_id)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return customer
 

@@ -1,0 +1,23 @@
+artifact_path: file:///C:/Users/Lenovo/OneDrive/Documents/BARCLAYS-PREDELINQUENCY/ml/mlruns/1/models/m-d5566c8ee4ed42f887f3695398143586/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.0
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.9.0
+model_id: m-d5566c8ee4ed42f887f3695398143586
+model_size_bytes: 821378
+model_uuid: m-d5566c8ee4ed42f887f3695398143586
+prompts: null
+run_id: 365040591c584c9faf19213ca3e96500
+utc_time_created: '2026-02-16 20:32:26.192795'

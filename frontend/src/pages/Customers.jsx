@@ -1,87 +1,156 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { getCustomers } from "../services/api";
-import exportCSV  from "../utils/exportCSV";
-
+import RiskBadge from "../components/common/RiskBadge";
+import { normalizeCustomer } from "../utils/riskTransforms";
 
 export default function Customers() {
-    const [customers, setCustomers] = useState([]);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [riskFilter, setRiskFilter] = useState("ALL");
+  const [minScore, setMinScore] = useState(0);
+  const [sortDesc, setSortDesc] = useState(true);
 
-    useEffect(() => {
-        async function loadCustomers() {
-            try {
-                const data = await getCustomers();
-                setCustomers(data);
-            } catch (error) {
-                console.error("Failed to load customers:", error);
-            }
-        }
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getCustomers({ limit: 200, offset: 0, mode: "random" });
+        setRows((data || []).map(normalizeCustomer));
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
-        loadCustomers();
-    }, []);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return [...rows]
+      .filter((r) => (q ? r.customer_id.toLowerCase().includes(q) : true))
+      .filter((r) => (riskFilter === "ALL" ? true : r.risk_level === riskFilter))
+      .filter((r) => r.risk_score >= minScore)
+      .sort((a, b) => (sortDesc ? b.risk_score - a.risk_score : a.risk_score - b.risk_score));
+  }, [rows, search, riskFilter, minScore, sortDesc]);
 
-    return (
-        <div className="space-y-10">
+  if (loading) return <div className="text-slate-400">Loading customers...</div>;
 
-            <div>
-                <h1 className="text-4xl font-semibold tracking-tight">
-                    Customer Portfolio
-                </h1>
-                <p className="text-slate-400 mt-2">
-                    Click on a customer to view detailed risk intelligence
-                </p>
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight gradient-text">Customer Risk Registry</h1>
+        <p className="text-slate-400 mt-1">Sortable model-scored customer registry for analyst workflows.</p>
+      </div>
+
+      <section className="app-surface p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search customer_id"
+            className="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <select
+            value={riskFilter}
+            onChange={(e) => setRiskFilter(e.target.value)}
+            className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Risk Levels</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+
+          <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+              <span>Minimum Risk Score</span>
+              <span>{minScore.toFixed(2)}</span>
             </div>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={minScore}
+              onChange={(e) => setMinScore(Number(e.target.value))}
+              className="w-full accent-indigo-500"
+            />
+          </div>
 
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
-                <table className="w-full text-sm">
-                    <thead className="bg-slate-800 text-slate-400 uppercase text-xs tracking-wider">
-                        <tr>
-                            <th className="p-4 text-left">Customer ID</th>
-                            <th className="p-4 text-left">Risk Score</th>
-                            <th className="p-4 text-left">Risk Level</th>
-                            <th className="p-4 text-left">Timestamp</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {customers.map((customer) => (
-                            <tr
-                                key={customer.customer_id}
-                                onClick={() => navigate(`/customers/${customer.customer_id}`)}
-                                className="cursor-pointer hover:bg-slate-800 transition-all"
-                            >
-                                <td className="p-4 font-medium">
-                                    {customer.customer_id}
-                                </td>
-                                <td className="p-4">
-                                    {customer.risk_score?.toFixed(2)}
-                                </td>
-                                <td className={`p-4 font-semibold ${customer.risk_level === "HIGH"
-                                        ? "text-red-400"
-                                        : customer.risk_level === "MEDIUM"
-                                            ? "text-amber-400"
-                                            : "text-emerald-400"
-                                    }`}>
-                                    {customer.risk_level}
-                                </td>
-                                <td className="p-4 text-slate-400">
-                                    {customer.timestamp}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-
-                </table>
-            </div>
-            <button
-                onClick={() => exportCSV(customers)}
-                className="px-6 py-3 bg-indigo-600 rounded-xl"
-            >
-                Export CSV
-            </button>
-
-
+          <button
+            onClick={() => setSortDesc((s) => !s)}
+            className="inline-flex items-center justify-center gap-2 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-sm hover:border-indigo-500 transition-colors"
+          >
+            <SlidersHorizontal size={15} />
+            Sort Risk: {sortDesc ? "High to Low" : "Low to High"}
+          </button>
         </div>
-    );
+      </section>
+
+      <section className="app-surface overflow-auto">
+        <table className="w-full text-sm data-table min-w-[980px]">
+          <thead className="border-b border-slate-700">
+            <tr>
+              <th className="px-4 py-3 text-left">Customer ID</th>
+              <th className="px-4 py-3 text-left">Risk Score</th>
+              <th className="px-4 py-3 text-left">Risk Level</th>
+              <th className="px-4 py-3 text-left">EMI Ratio</th>
+              <th className="px-4 py-3 text-left">Balance Trend</th>
+              <th className="px-4 py-3 text-left">Failure Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((row, idx) => (
+              <motion.tr
+                key={row.customer_id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: Math.min(idx * 0.01, 0.2) }}
+                onClick={() => navigate(`/customers/${row.customer_id}`)}
+                className={`cursor-pointer border-b border-slate-700 hover:bg-indigo-500/10 transition-colors ${
+                  row.risk_level === "HIGH"
+                    ? "border-l-2 border-l-rose-500/70"
+                    : row.risk_level === "MEDIUM"
+                      ? "border-l-2 border-l-amber-400/70"
+                      : "border-l-2 border-l-emerald-500/70"
+                }`}
+              >
+                <td className="px-4 py-3 font-semibold">{row.customer_id}</td>
+                <td className="px-4 py-3">
+                  <div className="w-40">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>{row.risk_score.toFixed(4)}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-700">
+                      <div
+                        className={`h-2 rounded-full ${
+                          row.risk_level === "HIGH"
+                            ? "bg-rose-500"
+                            : row.risk_level === "MEDIUM"
+                              ? "bg-amber-400"
+                              : "bg-emerald-500"
+                        }`}
+                        style={{ width: `${Math.min(100, row.risk_score * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3"><RiskBadge level={row.risk_level} /></td>
+                <td className="px-4 py-3">{row.emi_to_income_ratio.toFixed(3)}</td>
+                <td className="px-4 py-3">{Math.round(row.balance_trend_slope).toLocaleString()}</td>
+                <td className="px-4 py-3">{row.auto_debit_failure_rate.toFixed(3)}</td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </motion.div>
+  );
 }

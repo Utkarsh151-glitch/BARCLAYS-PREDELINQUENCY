@@ -1,154 +1,123 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { getPortfolioSummary } from "../services/api";
+import { useEffect, useMemo, useState } from "react";
 import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
   PieChart,
   Pie,
   Cell,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  LineChart,
-  Line
 } from "recharts";
+import { getModelMetrics, getPortfolioSummary } from "../services/api";
+import FeatureImportanceChart from "../components/charts/FeatureImportanceChart";
+import { buildMonthlyRiskTrend, portfolioRiskIndex } from "../utils/riskTransforms";
 
 export default function PortfolioRisk() {
-
   const [summary, setSummary] = useState(null);
+  const [metrics, setMetrics] = useState(null);
 
   useEffect(() => {
     async function loadData() {
-      const data = await getPortfolioSummary();
-      setSummary(data);
+      const [summaryResp, metricsResp] = await Promise.all([getPortfolioSummary(), getModelMetrics()]);
+      setSummary(summaryResp);
+      setMetrics(metricsResp);
     }
     loadData();
   }, []);
 
-  if (!summary) {
-    return <div className="text-slate-400">Loading analytics...</div>;
-  }
+  const trend = useMemo(() => buildMonthlyRiskTrend(summary || {}), [summary]);
+  const dist = useMemo(
+    () =>
+      summary
+        ? [
+            { name: "High", value: summary.high_risk, color: "#EF4444" },
+            { name: "Medium", value: summary.medium_risk, color: "#F59E0B" },
+            { name: "Low", value: summary.low_risk, color: "#10B981" },
+          ]
+        : [],
+    [summary]
+  );
 
-  const pieData = [
-    { name: "High", value: summary.high_risk },
-    { name: "Medium", value: summary.medium_risk },
-    { name: "Low", value: summary.low_risk },
-  ];
-
-  const trendData = [
-    { month: "Jan", high: 3 },
-    { month: "Feb", high: 4 },
-    { month: "Mar", high: 5 },
-    { month: "Apr", high: 6 },
-    { month: "May", high: summary.high_risk },
-  ];
-
-  const COLORS = ["#f87171", "#fbbf24", "#34d399"];
+  if (!summary) return <div className="text-slate-400">Loading portfolio risk analytics...</div>;
 
   return (
-    <div className="space-y-16">
-
-      {/* HEADER */}
+    <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-semibold tracking-tight">
-          Portfolio Risk Analytics
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight gradient-text">Portfolio Risk Analytics</h1>
         <p className="text-slate-400 mt-2">
-          Deep behavioral segmentation & exposure intelligence
+          Institutional view of segment concentration, trend drift, and model risk intelligence.
         </p>
       </div>
 
-      {/* GRID 1 */}
-      <div className="grid grid-cols-2 gap-12">
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="panel-surface p-5">
+          <p className="text-sm text-slate-400">Portfolio Risk Index</p>
+          <p className="text-5xl font-semibold mt-3">{portfolioRiskIndex(summary).toFixed(1)}</p>
+        </div>
+        <div className="panel-surface p-5">
+          <p className="text-sm text-slate-400">High Risk Exposure</p>
+          <p className="text-5xl font-semibold mt-3">{Number(summary.high_risk || 0).toLocaleString()}</p>
+        </div>
+        <div className="panel-surface p-5">
+          <p className="text-sm text-slate-400">AUC</p>
+          <p className="text-5xl font-semibold mt-3">{Number(metrics?.auc || 0).toFixed(4)}</p>
+        </div>
+      </section>
 
-        {/* DONUT */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 h-[420px]"
-        >
-          <h3 className="text-lg font-semibold mb-6">
-            Risk Distribution
-          </h3>
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="panel-surface p-5">
+          <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={dist} dataKey="value" innerRadius={68} outerRadius={102}>
+                  {dist.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: "#182238",
+                    border: "1px solid #334155",
+                    borderRadius: 10,
+                    color: "#e2e8f0",
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-          <ResponsiveContainer width="100%" height="85%">
-            <PieChart>
-              <Pie
-                data={pieData}
-                innerRadius={90}
-                outerRadius={130}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
+        <div className="panel-surface p-5 xl:col-span-2">
+          <h3 className="text-lg font-semibold mb-4">Monthly Risk Index Trend</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="month" stroke="#94A3B8" />
+                <YAxis stroke="#94A3B8" />
+                <Tooltip
+                  contentStyle={{
+                    background: "#182238",
+                    border: "1px solid #334155",
+                    borderRadius: 10,
+                    color: "#e2e8f0",
+                  }}
+                />
+                <Area type="monotone" dataKey="risk_index" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.15} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
 
-        {/* BAR */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 h-[420px]"
-        >
-          <h3 className="text-lg font-semibold mb-6">
-            Segment Exposure
-          </h3>
-
-          <ResponsiveContainer width="100%" height="85%">
-            <BarChart data={pieData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" />
-              <Tooltip />
-              <Bar
-                dataKey="value"
-                fill="#6366f1"
-                radius={[8, 8, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-      </div>
-
-      {/* GRID 2 - TREND */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.7 }}
-        className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 h-[420px]"
-      >
-        <h3 className="text-lg font-semibold mb-6">
-          High Risk Trend Over Time
-        </h3>
-
-        <ResponsiveContainer width="100%" height="85%">
-          <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="month" stroke="#94a3b8" />
-            <YAxis stroke="#94a3b8" />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="high"
-              stroke="#f87171"
-              strokeWidth={3}
-              dot={{ r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </motion.div>
-
+      <section className="panel-surface p-5">
+        <h3 className="text-lg font-semibold mb-4">Top Risk Drivers</h3>
+        <FeatureImportanceChart data={metrics?.top_5_feature_importance || []} height={280} />
+      </section>
     </div>
   );
 }

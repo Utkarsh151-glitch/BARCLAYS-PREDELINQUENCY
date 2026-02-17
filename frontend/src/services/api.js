@@ -21,8 +21,9 @@ export async function getPortfolioSummary() {
   return response.json();
 }
 
-export async function getCustomers() {
-  const response = await fetch(`${BASE_URL}/customers`);
+export async function getCustomers({ limit = 200, offset = 0, mode = "top_risk" } = {}) {
+  const response = await fetch(`${BASE_URL}/customers?limit=${limit}&offset=${offset}&mode=${mode}`);
+  if (!response.ok) throw new Error("Failed to fetch customers");
   return response.json();
 }
 
@@ -30,13 +31,36 @@ export async function getAlerts() {
   const response = await fetch(`${BASE_URL}/alerts`);
   return response.json();
 }
+
+export async function getModelMetrics() {
+  const response = await fetch(`${BASE_URL}/model-metrics`);
+  if (!response.ok) throw new Error("Failed to fetch model metrics");
+  return response.json();
+}
 export async function getCustomerById(id) {
-  const response = await fetch(`http://127.0.0.1:8000/customers/${id}`);
+  const response = await fetch(`${BASE_URL}/customers/${id}`);
   if (!response.ok) throw new Error("Failed to fetch customer");
   return response.json();
 }
 export async function getAggregator(customerId) {
-  const response = await fetch(`http://127.0.0.1:8000/aggregator/${customerId}`);
+  const response = await fetch(`${BASE_URL}/aggregator/${customerId}`);
   if (!response.ok) throw new Error("Failed to fetch aggregator data");
   return response.json();
+}
+
+/**
+ * Placeholder for a future savings trend endpoint.
+ * Intended contract:
+ * GET /customers/:id/savings-trend?range=7D|30D|90D
+ * Response shape:
+ * {
+ *   customer_id: string,
+ *   range: "7D" | "30D" | "90D",
+ *   points: [{ date: "YYYY-MM-DD", net_savings: number }]
+ * }
+ */
+export async function getSavingsTrend(customerId, range = "30D") {
+  void customerId;
+  void range;
+  return null;
 }

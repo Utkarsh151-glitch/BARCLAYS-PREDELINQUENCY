@@ -6,6 +6,7 @@ import PortfolioRisk from "./pages/PortfolioRisk";
 import Customers from "./pages/Customers";
 import CustomerDetail from "./pages/CustomerDetail";
 import Alerts from "./pages/Alerts";
+import ModelIntelligence from "./pages/ModelIntelligence";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:id" element={<CustomerDetail />} />
           <Route path="alerts" element={<Alerts />} />
+          <Route path="model-intelligence" element={<ModelIntelligence />} />
 
         </Route>
       </Routes>

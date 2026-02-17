@@ -1,71 +1,244 @@
-import { useEffect, useState } from "react";
-import RiskSummaryCard from "../components/RiskSummaryCard";
-import RiskDonutChart from "../components/RiskDonutChart";
-import { getPortfolioSummary } from "../services/api";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Activity, AlertTriangle, ShieldCheck, Users } from "lucide-react";
+import { getCustomers, getModelMetrics } from "../services/api";
+import KpiCard from "../components/common/KpiCard";
+import FeatureImportanceChart from "../components/charts/FeatureImportanceChart";
+import RiskBadge from "../components/common/RiskBadge";
+import { normalizeCustomer, percentage, summarizeCustomers } from "../utils/riskTransforms";
+
+const COLORS = ["#F43F5E", "#FBBF24", "#10B981"];
+const PERF_COLORS = {
+  AUC: "bg-indigo-500",
+  Precision: "bg-cyan-500",
+  Recall: "bg-emerald-500",
+  F1: "bg-amber-400",
+};
 
 export default function Dashboard() {
-    const [summary, setSummary] = useState(null);
+  const navigate = useNavigate();
+  const [customers, setCustomers] = useState([]);
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadData() {
-            const data = await getPortfolioSummary();
-            setSummary(data);
+  useEffect(() => {
+    async function load() {
+      try {
+        const [customerResp, metricsResp] = await Promise.all([
+          getCustomers({ limit: 200, offset: 0, mode: "random" }),
+          getModelMetrics(),
+        ]);
+        setCustomers((customerResp || []).map(normalizeCustomer));
+        setMetrics(metricsResp);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const summary = useMemo(() => summarizeCustomers(customers), [customers]);
+  const highRiskPct = percentage(summary.high, summary.total);
+  const mediumRiskPct = percentage(summary.medium, summary.total);
+  const lowRiskPct = percentage(summary.low, summary.total);
+
+  const pieData = [
+    { name: "High", value: summary.high },
+    { name: "Medium", value: summary.medium },
+    { name: "Low", value: summary.low },
+  ];
+
+  const balancedCustomers = useMemo(() => {
+    const target = 10;
+    const byLevel = {
+      HIGH: [...customers].filter((c) => c.risk_level === "HIGH").sort((a, b) => b.risk_score - a.risk_score),
+      MEDIUM: [...customers].filter((c) => c.risk_level === "MEDIUM").sort((a, b) => b.risk_score - a.risk_score),
+      LOW: [...customers].filter((c) => c.risk_level === "LOW").sort((a, b) => b.risk_score - a.risk_score),
+    };
+
+    const ratio = {
+      HIGH: Math.round((summary.high / Math.max(summary.total, 1)) * target),
+      MEDIUM: Math.round((summary.medium / Math.max(summary.total, 1)) * target),
+      LOW: Math.round((summary.low / Math.max(summary.total, 1)) * target),
+    };
+
+    const picked = [];
+    const pull = (level, count) => {
+      for (let i = 0; i < count && byLevel[level].length > 0; i += 1) picked.push(byLevel[level].shift());
+    };
+
+    pull("HIGH", ratio.HIGH);
+    pull("MEDIUM", ratio.MEDIUM);
+    pull("LOW", ratio.LOW);
+
+    const fallbackOrder = ["HIGH", "MEDIUM", "LOW"];
+    while (picked.length < target) {
+      let added = false;
+      for (const level of fallbackOrder) {
+        if (byLevel[level].length > 0 && picked.length < target) {
+          picked.push(byLevel[level].shift());
+          added = true;
         }
-
-        loadData();
-    }, []);
-
-    if (!summary) {
-        return <div className="text-slate-400">Loading portfolio data...</div>;
+      }
+      if (!added) break;
     }
 
-    return (
-        <div className="space-y-14">
+    return picked;
+  }, [customers, summary.high, summary.low, summary.medium, summary.total]);
 
-            <div>
-                <h1 className="text-4xl font-semibold tracking-tight">
-                    Enterprise Risk Portfolio
-                </h1>
-                <p className="text-slate-400 mt-2">
-                    Real-time behavioral credit risk intelligence
-                </p>
-            </div>
-            <div className="flex gap-4">
-                <button className="px-4 py-2 bg-slate-800 rounded-xl">7 Days</button>
-                <button className="px-4 py-2 bg-slate-800 rounded-xl">30 Days</button>
-                <button className="px-4 py-2 bg-slate-800 rounded-xl">90 Days</button>
-            </div>
+  if (loading) return <div className="text-slate-400">Loading dashboard intelligence...</div>;
 
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="space-y-6">
+      <header>
+        <h1 className="text-3xl font-semibold tracking-tight gradient-text">Risk Intelligence Command Center</h1>
+        <p className="text-slate-400 mt-1">Institutional pre-delinquency monitoring across active model outputs.</p>
+      </header>
 
-            {/* SUMMARY CARDS ONLY */}
-            <div className="grid grid-cols-4 gap-8">
-                <RiskSummaryCard
-                    title="Total Customers"
-                    value={summary.total_customers}
-                    type="neutral"
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KpiCard title="Total Customers" value={summary.total} tone="indigo" subtext="Sampled for UI performance" />
+        <KpiCard title="High Risk %" value={highRiskPct} suffix="%" tone="danger" subtext="Immediate intervention cohort" />
+        <KpiCard title="Medium Risk %" value={mediumRiskPct} suffix="%" tone="warning" subtext="Watchlist and nudges" />
+        <KpiCard title="Low Risk %" value={lowRiskPct} suffix="%" tone="success" subtext="Stable repayment behavior" />
+      </section>
+
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="app-surface accent-border p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Users size={16} className="text-indigo-400" />
+            <h2 className="font-semibold">Risk Distribution</h2>
+          </div>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" innerRadius={70} outerRadius={106} paddingAngle={3}>
+                  {pieData.map((entry, idx) => (
+                    <Cell key={entry.name} fill={COLORS[idx]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: "#182238",
+                    border: "1px solid #334155",
+                    borderRadius: 10,
+                    color: "#e2e8f0",
+                  }}
                 />
-                <RiskSummaryCard
-                    title="High Risk"
-                    value={summary.high_risk}
-                    type="high"
-                />
-                <RiskSummaryCard
-                    title="Medium Risk"
-                    value={summary.medium_risk}
-                    type="medium"
-                />
-                <RiskSummaryCard
-                    title="Low Risk"
-                    value={summary.low_risk}
-                    type="low"
-                />
-            </div>
-
-            {/* SMALL SNAPSHOT DONUT */}
-            <div className="w-80">
-                <RiskDonutChart summary={summary} />
-            </div>
-
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-xs mt-2">
+            <LegendPill color="bg-rose-500" label={`High: ${summary.high}`} />
+            <LegendPill color="bg-amber-400" label={`Medium: ${summary.medium}`} />
+            <LegendPill color="bg-emerald-500" label={`Low: ${summary.low}`} />
+          </div>
         </div>
-    );
+
+        <div className="app-surface accent-border p-5 xl:col-span-2">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck size={16} className="text-indigo-400" />
+            <h2 className="font-semibold">Model Intelligence</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-3">
+              <PerfBar label="AUC" value={Number(metrics?.auc || 0)} />
+              <PerfBar label="Precision" value={Number(metrics?.precision || 0)} />
+              <PerfBar label="Recall" value={Number(metrics?.recall || 0)} />
+              <PerfBar label="F1" value={Number(metrics?.f1 || 0)} />
+            </div>
+            <div>
+              <FeatureImportanceChart data={metrics?.top_5_feature_importance || []} height={230} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="app-surface accent-border p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="text-rose-400" />
+            <h2 className="font-semibold">Recent Customers (Balanced Risk Mix)</h2>
+          </div>
+          <button
+            onClick={() => navigate("/customers")}
+            className="text-sm px-3 py-1.5 rounded border border-slate-700 hover:border-indigo-500 transition-colors"
+            
+          >
+            View All
+          </button>
+        </div>
+        <div className="overflow-auto">
+          <table className="w-full text-sm data-table min-w-[760px]">
+            <thead className="border-b border-slate-700">
+              <tr>
+                <th className="py-3 text-left">Customer ID</th>
+                <th className="py-3 text-left">Risk Score</th>
+                <th className="py-3 text-left">Risk Level</th>
+                <th className="py-3 text-left">EMI Ratio</th>
+                <th className="py-3 text-left">Balance Trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              {balancedCustomers.map((c) => (
+                <tr
+                  key={c.customer_id}
+                  onClick={() => navigate(`/customers/${c.customer_id}`)}
+                  className={`border-b border-slate-700 hover:bg-indigo-500/10 transition-colors cursor-pointer ${
+                    c.risk_level === "HIGH"
+                      ? "border-l-2 border-l-rose-500/60"
+                      : c.risk_level === "MEDIUM"
+                        ? "border-l-2 border-l-amber-400/60"
+                        : "border-l-2 border-l-emerald-500/60"
+                  }`}
+                >
+                  <td className="py-3 font-semibold">{c.customer_id}</td>
+                  <td className="py-3">{c.risk_score.toFixed(4)}</td>
+                  <td className="py-3"><RiskBadge level={c.risk_level} /></td>
+                  <td className="py-3">{c.emi_to_income_ratio.toFixed(3)}</td>
+                  <td className="py-3">{Math.round(c.balance_trend_slope).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <p className="text-xs text-slate-400">
+        All KPI cards and Risk Distribution chart are computed from the same loaded customer sample ({summary.total} customers).
+      </p>
+    </motion.div>
+  );
+}
+
+function PerfBar({ label, value }) {
+  const pct = Math.max(0, Math.min(100, value * 100));
+  const barColor = PERF_COLORS[label] || "bg-indigo-500";
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm mb-1">
+        <span className="text-slate-300 flex items-center gap-1"><Activity size={13} />{label}</span>
+        <span className="text-slate-400">{value.toFixed(4)}</span>
+      </div>
+      <div className="h-2 rounded-full bg-slate-200">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.6 }}
+          className={`h-2 rounded-full ${barColor}`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function LegendPill({ color, label }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-2.5 py-1">
+      <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
+      <span className="text-slate-300">{label}</span>
+    </div>
+  );
 }
