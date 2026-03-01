@@ -1,0 +1,9 @@
+{
+  "createdAt": "2026-03-01T17:53:00.395Z",
+  "entries": [
+    {
+      "filePath": "frontend\\package.json",
+      "originalContent": "{\n  \"name\": \"frontend\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint .\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@tailwindcss/vite\": \"^4.1.18\",\n    \"apexcharts\": \"^5.5.0\",\n    \"axios\": \"^1.13.5\",\n    \"file-saver\": \"^2.0.5\",\n    \"framer-motion\": \"^12.34.0\",\n    \"lucide-react\": \"^0.563.0\",\n    \"motion\": \"^12.34.0\",\n    \"react\": \"^19.2.0\",\n    \"react-apexcharts\": \"^2.0.0\",\n    \"react-dom\": \"^19.2.0\",\n    \"react-router-dom\": \"^7.13.0\",\n    \"recharts\": \"^3.7.0\"\n  },\n  \"devDependencies\": {\n    \"@eslint/js\": \"^9.39.1\",\n    \"@types/react\": \"^19.2.7\",\n    \"@types/react-dom\": \"^19.2.3\",\n    \"@vitejs/plugin-react\": \"^5.1.1\",\n    \"autoprefixer\": \"^10.4.24\",\n    \"eslint\": \"^9.39.1\",\n    \"eslint-plugin-react-hooks\": \"^7.0.1\",\n    \"eslint-plugin-react-refresh\": \"^0.4.24\",\n    \"globals\": \"^16.5.0\",\n    \"postcss\": \"^8.5.6\",\n    \"tailwindcss\": \"^4.1.18\",\n    \"vite\": \"^7.3.1\"\n  },\n  \"engines\": {\n    \"node\": \">=20\"\n  }\n}\n"
+    }
+  ]
+}

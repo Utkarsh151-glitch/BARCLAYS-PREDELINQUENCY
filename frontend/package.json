@@ -36,5 +36,17 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "vite": "^7.3.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devoployAi": {
+    "enabled": true,
+    "mode": "local-heuristic",
+    "strategy": "rule-guided ai fallback",
+    "detectedIssues": [
+      "INCOMPATIBLE_NODE_ENGINE"
+    ],
+    "generatedAt": "2026-03-01T17:53:00.394Z"
   }
 }
