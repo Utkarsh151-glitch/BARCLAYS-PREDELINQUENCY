@@ -1,0 +1,13 @@
+{
+  "createdAt": "2026-03-05T20:56:15.240Z",
+  "entries": [
+    {
+      "filePath": "frontend\\package.json",
+      "originalContent": "{\r\n  \"name\": \"frontend\",\r\n  \"private\": true,\r\n  \"version\": \"0.0.0\",\r\n  \"type\": \"module\",\r\n  \"scripts\": {\r\n    \"dev\": \"vite\",\r\n    \"build\": \"vite build\",\r\n    \"lint\": \"eslint .\",\r\n    \"preview\": \"vite preview\"\r\n  },\r\n  \"dependencies\": {\r\n    \"@tailwindcss/vite\": \"^4.1.18\",\r\n    \"apexcharts\": \"^5.5.0\",\r\n    \"axios\": \"^1.13.5\",\r\n    \"file-saver\": \"^2.0.5\",\r\n    \"framer-motion\": \"^12.34.0\",\r\n    \"lucide-react\": \"^0.563.0\",\r\n    \"motion\": \"^12.34.0\",\r\n    \"react\": \"^19.2.0\",\r\n    \"react-apexcharts\": \"^2.0.0\",\r\n    \"react-dom\": \"^19.2.0\",\r\n    \"react-router-dom\": \"^7.13.0\",\r\n    \"recharts\": \"^3.7.0\"\r\n  },\r\n  \"devDependencies\": {\r\n    \"@eslint/js\": \"^9.39.1\",\r\n    \"@types/react\": \"^19.2.7\",\r\n    \"@types/react-dom\": \"^19.2.3\",\r\n    \"@vitejs/plugin-react\": \"^5.1.1\",\r\n    \"autoprefixer\": \"^10.4.24\",\r\n    \"eslint\": \"^9.39.1\",\r\n    \"eslint-plugin-react-hooks\": \"^7.0.1\",\r\n    \"eslint-plugin-react-refresh\": \"^0.4.24\",\r\n    \"globals\": \"^16.5.0\",\r\n    \"postcss\": \"^8.5.6\",\r\n    \"tailwindcss\": \"^4.1.18\",\r\n    \"vite\": \"^7.3.1\"\r\n  }\r\n}\r\n"
+    },
+    {
+      "filePath": "frontend\\vercel.json",
+      "originalContent": ""
+    }
+  ]
+}
