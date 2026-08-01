@@ -1,0 +1,9 @@
+app/
+data/
+ml/
+__pycache__/
+*.py
+requirements.txt
+render.yaml
+.env.example
+.devoploy/
