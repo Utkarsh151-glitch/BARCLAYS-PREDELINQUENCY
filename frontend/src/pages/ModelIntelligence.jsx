@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import {
   AreaChart,
   Area,
@@ -91,11 +90,11 @@ export default function ModelIntelligence() {
   if (!metrics || !adjusted) return <div className="text-rose-600">Unable to load model metrics.</div>;
 
   return (
-    <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+    <div className="space-y-5">
+      <div>
         <h1 className="text-3xl font-semibold tracking-tight gradient-text">Model Intelligence</h1>
         <p className="text-slate-400 mt-2">Performance diagnostics, threshold sensitivity, and governance monitoring.</p>
-      </motion.div>
+      </div>
 
       <section className="grid grid-cols-1 xl:grid-cols-5 gap-4">
         <MetricCard title="AUC" value={adjusted.auc.toFixed(4)} />
@@ -105,7 +104,7 @@ export default function ModelIntelligence() {
         <MetricCard title="Evaluated Rows" value={Number(metrics.evaluated_rows || 0).toLocaleString()} />
       </section>
 
-      <section className="panel-surface p-5">
+      <section className="panel-surface p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <h3 className="text-lg font-semibold">Threshold Simulation (Demo)</h3>
           <div className="flex items-center gap-3">
@@ -125,12 +124,12 @@ export default function ModelIntelligence() {
       </section>
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <h3 className="text-lg font-semibold mb-4">Feature Importance</h3>
           <FeatureImportanceChart data={metrics.top_5_feature_importance || []} height={300} />
         </div>
 
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <h3 className="text-lg font-semibold mb-4">Confusion Matrix Heatmap</h3>
           <div className="grid grid-cols-2 gap-3">
             <MatrixCell label="TP" value={adjusted.matrix.tp} />
@@ -140,7 +139,7 @@ export default function ModelIntelligence() {
           </div>
         </div>
 
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <h3 className="text-lg font-semibold mb-4">Model Governance</h3>
           <GovernanceRow label="Model Type" value="RandomForest" />
           <GovernanceRow label="Dataset Size" value={Number(metrics.evaluated_rows || 0).toLocaleString()} />
@@ -150,24 +149,24 @@ export default function ModelIntelligence() {
         </div>
       </section>
 
-      <section className="panel-surface p-5">
+      <section className="panel-surface p-4">
         <h3 className="text-lg font-semibold mb-4">ROC Curve</h3>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rocData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#dbe3ef" />
-              <XAxis dataKey="fpr" stroke="#64748b" tickFormatter={(v) => v.toFixed(1)} />
-              <YAxis dataKey="tpr" stroke="#64748b" tickFormatter={(v) => v.toFixed(1)} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E3E7ED" />
+              <XAxis dataKey="fpr" stroke="#5B6472" tickFormatter={(v) => v.toFixed(1)} />
+              <YAxis dataKey="tpr" stroke="#5B6472" tickFormatter={(v) => v.toFixed(1)} />
               <Tooltip
                 contentStyle={{
-                  background: "#182238",
-                  border: "1px solid #334155",
-                  borderRadius: 10,
-                  color: "#e2e8f0",
+                  background: "#FFFFFF",
+                  border: "1px solid #E3E7ED",
+                  borderRadius: 4,
+                  color: "#1F2933",
                 }}
                 formatter={(val) => Number(val).toFixed(3)}
               />
-              <Area type="monotone" dataKey="tpr" stroke="#4f46e5" fill="#4f46e5" fillOpacity={0.14} strokeWidth={2.4} />
+              <Area type="monotone" dataKey="tpr" stroke="#123C69" fill="#123C69" fillOpacity={0.08} strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -178,9 +177,9 @@ export default function ModelIntelligence() {
 
 function MetricCard({ title, value }) {
   return (
-    <div className="panel-surface hover-lift p-4">
+    <div className="panel-surface p-4">
       <p className="text-slate-400 text-sm">{title}</p>
-      <p className="text-3xl font-semibold mt-2">{value}</p>
+      <p className="text-2xl font-semibold mt-2 num">{value}</p>
     </div>
   );
 }
@@ -189,7 +188,7 @@ function MatrixCell({ label, value }) {
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
       <p className="text-xs text-slate-400">{label}</p>
-      <p className="text-3xl font-semibold mt-1 text-slate-100">{Number(value || 0).toLocaleString()}</p>
+      <p className="text-2xl font-semibold mt-1 text-slate-100 num">{Number(value || 0).toLocaleString()}</p>
     </div>
   );
 }
@@ -198,7 +197,7 @@ function GovernanceRow({ label, value }) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-slate-700 text-sm">
       <span className="text-slate-400">{label}</span>
-      <span className="text-slate-100">{value}</span>
+      <span className="text-slate-100 num">{value}</span>
     </div>
   );
 }

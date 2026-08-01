@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { BellRing } from "lucide-react";
 import { getCustomers } from "../services/api";
 import RiskBadge from "../components/common/RiskBadge";
@@ -59,7 +58,7 @@ export default function Alerts() {
   if (loading) return <div className="text-slate-500">Loading alerts...</div>;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-5">
+    <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight gradient-text">Alerts Intelligence Feed</h1>
         <p className="text-slate-400 mt-1">Balanced risk feed across High, Medium, and Low cohorts.</p>
@@ -71,7 +70,7 @@ export default function Alerts() {
           return (
             <div
               key={row.customer_id}
-              className={`app-surface border-l-4 p-4 panel-hover ${
+              className={`app-surface border-l-4 p-3 panel-hover ${
                 row.risk_level === "HIGH"
                   ? "border-l-rose-500"
                   : row.risk_level === "MEDIUM"
@@ -102,14 +101,14 @@ export default function Alerts() {
                     />
                   </div>
                   <div>
-                    <p className="font-semibold">{row.customer_id}</p>
+                    <p className="font-semibold num">{row.customer_id}</p>
                     <p className="text-sm text-slate-500">
                       Top contributing factor: {factor.label} ({factor.feature})
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold">{row.risk_score.toFixed(4)}</span>
+                  <span className="text-sm font-semibold num">{row.risk_score.toFixed(4)}</span>
                   <RiskBadge level={row.risk_level} />
                   <span
                     className={`inline-flex rounded border px-2 py-1 text-xs ${
@@ -120,7 +119,7 @@ export default function Alerts() {
                           : "border-emerald-500/40 text-emerald-300"
                     }`}
                   >
-                    ACTION: {row.risk_level === "HIGH" ? "PRIORITY REVIEW" : row.risk_level === "MEDIUM" ? "MONITOR" : "NORMAL"}
+                    {row.risk_level === "HIGH" ? "Escalate" : row.risk_level === "MEDIUM" ? "Monitor" : "Cleared"}
                   </span>
                 </div>
               </div>
@@ -128,6 +127,6 @@ export default function Alerts() {
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 }

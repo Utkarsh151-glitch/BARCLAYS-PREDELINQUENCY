@@ -9,10 +9,10 @@ import FeatureImportanceChart from "../components/charts/FeatureImportanceChart"
 import RiskBadge from "../components/common/RiskBadge";
 import { normalizeCustomer, percentage, summarizeCustomers } from "../utils/riskTransforms";
 
-const COLORS = ["#F43F5E", "#FBBF24", "#10B981"];
+const COLORS = ["#B94A48", "#5B6472", "#2F7D5C"];
 const PERF_COLORS = {
   AUC: "bg-indigo-500",
-  Precision: "bg-cyan-500",
+  Precision: "bg-slate-700",
   Recall: "bg-emerald-500",
   F1: "bg-amber-400",
 };
@@ -91,7 +91,7 @@ export default function Dashboard() {
   if (loading) return <div className="text-slate-400">Loading dashboard intelligence...</div>;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }} className="space-y-6">
+    <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight gradient-text">Risk Intelligence Command Center</h1>
         <p className="text-slate-400 mt-1">Institutional pre-delinquency monitoring across active model outputs.</p>
@@ -105,7 +105,7 @@ export default function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="app-surface accent-border p-5">
+        <div className="app-surface accent-border p-4">
           <div className="flex items-center gap-2 mb-3">
             <Users size={16} className="text-indigo-400" />
             <h2 className="font-semibold">Risk Distribution</h2>
@@ -113,17 +113,17 @@ export default function Dashboard() {
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} dataKey="value" innerRadius={70} outerRadius={106} paddingAngle={3}>
+                <Pie data={pieData} dataKey="value" innerRadius={70} outerRadius={104} paddingAngle={1}>
                   {pieData.map((entry, idx) => (
                     <Cell key={entry.name} fill={COLORS[idx]} />
                   ))}
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "#182238",
-                    border: "1px solid #334155",
-                    borderRadius: 10,
-                    color: "#e2e8f0",
+                    background: "#FFFFFF",
+                    border: "1px solid #E3E7ED",
+                    borderRadius: 4,
+                    color: "#1F2933",
                   }}
                 />
               </PieChart>
@@ -136,7 +136,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="app-surface accent-border p-5 xl:col-span-2">
+        <div className="app-surface accent-border p-4 xl:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck size={16} className="text-indigo-400" />
             <h2 className="font-semibold">Model Intelligence</h2>
@@ -156,7 +156,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="app-surface accent-border p-5">
+      <section className="app-surface accent-border p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <AlertTriangle size={16} className="text-rose-400" />
@@ -194,11 +194,11 @@ export default function Dashboard() {
                         : "border-l-2 border-l-emerald-500/60"
                   }`}
                 >
-                  <td className="py-3 font-semibold">{c.customer_id}</td>
-                  <td className="py-3">{c.risk_score.toFixed(4)}</td>
+                  <td className="py-3 font-semibold num">{c.customer_id}</td>
+                  <td className="py-3 num">{c.risk_score.toFixed(4)}</td>
                   <td className="py-3"><RiskBadge level={c.risk_level} /></td>
-                  <td className="py-3">{c.emi_to_income_ratio.toFixed(3)}</td>
-                  <td className="py-3">{Math.round(c.balance_trend_slope).toLocaleString()}</td>
+                  <td className="py-3 num">{c.emi_to_income_ratio.toFixed(3)}x</td>
+                  <td className="py-3 num">{Math.round(c.balance_trend_slope).toLocaleString()} INR/mo</td>
                 </tr>
               ))}
             </tbody>
@@ -209,7 +209,7 @@ export default function Dashboard() {
       <p className="text-xs text-slate-400">
         All KPI cards and Risk Distribution chart are computed from the same loaded customer sample ({summary.total} customers).
       </p>
-    </motion.div>
+    </div>
   );
 }
 
@@ -226,7 +226,7 @@ function PerfBar({ label, value }) {
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.18 }}
           className={`h-2 rounded-full ${barColor}`}
         />
       </div>

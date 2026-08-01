@@ -10,7 +10,7 @@ export default function SavingsTrendChart({
   seriesData,
   selectedRange,
   onRangeChange,
-  currencySymbol = "₹",
+  currencySymbol = "Rs.",
 }) {
   const chartSeries = [
     {
@@ -27,22 +27,25 @@ export default function SavingsTrendChart({
       id: "savings-trend",
       toolbar: { show: false },
       zoom: { enabled: false },
-      foreColor: "#94a3b8",
+      foreColor: "#5B6472",
+      animations: {
+        speed: 180,
+      },
     },
     stroke: {
-      curve: "smooth",
-      width: 3,
+      curve: "straight",
+      width: 2,
     },
-    colors: ["#34d399"],
+    colors: ["#2F7D5C"],
     grid: {
-      borderColor: "#1e293b",
-      strokeDashArray: 4,
+      borderColor: "#E3E7ED",
+      strokeDashArray: 0,
     },
     xaxis: {
       type: "datetime",
       labels: { datetimeUTC: false },
-      axisBorder: { color: "#334155" },
-      axisTicks: { color: "#334155" },
+      axisBorder: { color: "#E3E7ED" },
+      axisTicks: { color: "#E3E7ED" },
     },
     yaxis: {
       labels: {
@@ -50,7 +53,7 @@ export default function SavingsTrendChart({
       },
     },
     tooltip: {
-      theme: "dark",
+      theme: "light",
       x: { format: "dd MMM yyyy" },
       y: {
         formatter: (value) => `${currencySymbol}${Math.round(value).toLocaleString()}`,
@@ -59,8 +62,8 @@ export default function SavingsTrendChart({
   };
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
-      <div className="flex items-center justify-between gap-3 mb-5">
+    <div className="app-surface p-4">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <h3 className="text-lg font-semibold">Savings Trend</h3>
         <div className="flex gap-2">
           {RANGE_OPTIONS.map((option) => (

@@ -1,94 +1,251 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
-  --bg-0: #0a1020;
-  --bg-1: #0f172e;
-  --bg-2: #141f38;
-  --surface: rgba(17, 27, 49, 0.82);
-  --surface-strong: rgba(21, 33, 58, 0.92);
-  --stroke: rgba(148, 163, 184, 0.28);
-  --text: #e6eefc;
-  --muted: #99abc9;
-
-  --indigo: #6366f1;
-  --cyan: #22d3ee;
-  --emerald: #10b981;
-  --amber: #f59e0b;
-  --rose: #f43f5e;
+  --canvas: #f7f8fa;
+  --surface: #ffffff;
+  --line: #e3e7ed;
+  --text: #1f2933;
+  --muted: #5b6472;
+  --primary: #123c69;
+  --credit: #2f7d5c;
+  --debit: #b94a48;
+  --gray-900: #1f2933;
+  --gray-700: #3f4752;
+  --gray-500: #5b6472;
+  --gray-300: #aab2bd;
+  --gray-100: #eef1f5;
 }
 
 html,
 body {
   margin: 0;
-  padding: 0;
   min-height: 100%;
-  background: var(--bg-0);
+  background: var(--canvas);
   color: var(--text);
-  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01" 1;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 #root {
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 520px at -10% -12%, rgba(99, 102, 241, 0.22), transparent 50%),
-    radial-gradient(820px 420px at 95% -8%, rgba(34, 211, 238, 0.16), transparent 52%),
-    radial-gradient(760px 380px at 80% 115%, rgba(245, 158, 11, 0.12), transparent 55%),
-    linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 42%, var(--bg-2) 100%);
+  background: var(--canvas);
 }
 
-.app-surface {
-  background: linear-gradient(145deg, var(--surface) 0%, var(--surface-strong) 100%);
-  border: 1px solid var(--stroke);
-  border-radius: 18px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 16px 34px rgba(2, 6, 23, 0.35);
+button,
+input,
+select {
+  font: inherit;
 }
 
-.panel-hover {
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+button,
+select,
+input {
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.app-surface,
+.panel-surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: none;
 }
 
 .panel-hover:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 20px 40px rgba(2, 6, 23, 0.45);
-  border-color: rgba(99, 102, 241, 0.5);
+  transform: none;
+  background: #fbfcfd;
+  border-color: #cdd5df;
+  box-shadow: none;
 }
 
 .accent-border {
   position: relative;
-  overflow: hidden;
 }
 
 .accent-border::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: linear-gradient(92deg, var(--indigo), var(--cyan), var(--emerald), var(--amber));
-  opacity: 0.9;
-}
-
-.data-table thead th {
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.data-table tbody tr {
-  color: #e4ecfa;
+  content: none;
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #c7d2fe 0%, #a5f3fc 50%, #fde68a 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+}
+
+.data-table {
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table thead th {
+  color: var(--gray-500);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: #fbfcfd;
+}
+
+.data-table tbody tr {
+  color: var(--text);
+}
+
+.data-table th,
+.data-table td {
+  border-color: var(--line) !important;
+}
+
+.data-table td:nth-child(n + 2),
+.data-table th:nth-child(n + 2),
+.num,
+.numeric,
+.mono {
+  font-family: "IBM Plex Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.text-slate-100,
+.text-slate-200,
+.text-slate-300,
+.text-white {
+  color: var(--text) !important;
+}
+
+.text-slate-400,
+.text-slate-500 {
+  color: var(--muted) !important;
+}
+
+.text-indigo-200,
+.text-indigo-300,
+.text-indigo-400,
+.text-indigo-500,
+.text-indigo-600,
+.text-cyan-400 {
+  color: var(--primary) !important;
+}
+
+.text-emerald-200,
+.text-emerald-300,
+.text-emerald-400,
+.text-emerald-500,
+.text-emerald-600,
+.text-emerald-700 {
+  color: var(--credit) !important;
+}
+
+.text-rose-300,
+.text-rose-400,
+.text-rose-500,
+.text-rose-600,
+.text-rose-700 {
+  color: var(--debit) !important;
+}
+
+.text-amber-200,
+.text-amber-300,
+.text-amber-400,
+.text-amber-500,
+.text-amber-700 {
+  color: var(--gray-700) !important;
+}
+
+.border-slate-700,
+.border-slate-800,
+.border-slate-700\/80,
+.border-slate-700\/60,
+.border-slate-700\/40 {
+  border-color: var(--line) !important;
+}
+
+.bg-slate-700,
+.bg-slate-800,
+.bg-slate-900,
+.bg-slate-900\/60,
+.bg-slate-900\/70,
+.bg-slate-900\/80 {
+  background-color: var(--surface) !important;
+}
+
+.bg-indigo-500,
+.bg-indigo-600 {
+  background-color: var(--primary) !important;
+}
+
+button.bg-indigo-500,
+button.bg-indigo-600 {
+  color: #ffffff !important;
+}
+
+.bg-emerald-500 {
+  background-color: var(--credit) !important;
+}
+
+.bg-rose-500 {
+  background-color: var(--debit) !important;
+}
+
+.bg-amber-400,
+.bg-amber-500 {
+  background-color: var(--gray-500) !important;
+}
+
+.bg-rose-100 {
+  background-color: #fbf0f0 !important;
+}
+
+.bg-amber-100 {
+  background-color: var(--gray-100) !important;
+}
+
+.bg-emerald-100 {
+  background-color: #edf6f1 !important;
+}
+
+.border-rose-200 {
+  border-color: #e3b8b7 !important;
+}
+
+.border-amber-200 {
+  border-color: var(--gray-300) !important;
+}
+
+.border-emerald-200 {
+  border-color: #a9cdbd !important;
+}
+
+.rounded-2xl,
+.rounded-xl,
+.rounded-lg {
+  border-radius: 4px !important;
+}
+
+.rounded-full {
+  border-radius: 999px;
+}
+
+.font-mono,
+td,
+.tabular-nums {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--line);
+}
+
+.recharts-text {
+  fill: var(--muted);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+.recharts-tooltip-wrapper {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
 }

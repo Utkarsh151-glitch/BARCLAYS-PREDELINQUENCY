@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,6 @@ REQUIRED_COLUMNS = [
     "discretionary_spend",
     "cash_withdrawals",
 ]
-
 
 FEATURE_COLUMNS = [
     "salary_mean",
@@ -53,27 +52,26 @@ def _trend_slope(df: pd.DataFrame, value_col: str) -> pd.Series:
     df_local["__x2"] = df_local[x_col] * df_local[x_col]
 
     grouped = df_local.groupby("customer_id", sort=False)
-    n = grouped.size().astype(float)
+    count = grouped.size().astype(float)
     sum_x = grouped[x_col].sum()
     sum_y = grouped[value_col].sum()
     sum_xy = grouped["__xy"].sum()
     sum_x2 = grouped["__x2"].sum()
 
-    denominator = (n * sum_x2 - sum_x * sum_x).replace(0, np.nan)
-    slope = (n * sum_xy - sum_x * sum_y) / denominator
+    denominator = (count * sum_x2 - sum_x * sum_x).replace(0, np.nan)
+    slope = (count * sum_xy - sum_x * sum_y) / denominator
     return slope.fillna(0.0)
 
 
 def _max_consecutive_streak(values: np.ndarray) -> int:
     max_streak = 0
-    curr = 0
-    for val in values:
-        if val > 0:
-            curr += 1
-            if curr > max_streak:
-                max_streak = curr
+    current = 0
+    for value in values:
+        if value > 0:
+            current += 1
+            max_streak = max(max_streak, current)
         else:
-            curr = 0
+            current = 0
     return int(max_streak)
 
 
@@ -81,7 +79,6 @@ def _prepare_raw(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df = df.sort_values(["customer_id", "month"]).reset_index(drop=True)
 
-    # Infer salary delay from each customer's early baseline salary credit day.
     first_2m = df.groupby("customer_id", sort=False).head(2).groupby("customer_id", sort=False)
     baseline_credit = first_2m["salary_credit_day"].median()
     df["salary_delay_days"] = np.maximum(
@@ -90,7 +87,6 @@ def _prepare_raw(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     if "utility_payment_delay_days" not in df.columns:
-        # Proxy payment delays from salary delays and debit failures.
         df["utility_payment_delay_days"] = (
             0.6 * df["salary_delay_days"] + 1.8 * df["auto_debit_failures"]
         ).clip(lower=0.0)
@@ -120,7 +116,7 @@ def engineer_features(raw_df: pd.DataFrame) -> pd.DataFrame:
     month_counts = grouped.size().astype(float)
     auto_debit_failure_rate = grouped["auto_debit_failures"].sum() / month_counts
     max_consecutive_failure_streak = grouped["auto_debit_failures"].apply(
-        lambda s: _max_consecutive_streak(s.to_numpy())
+        lambda series: _max_consecutive_streak(series.to_numpy())
     )
 
     utility_payment_delay_avg = grouped["utility_payment_delay_days"].mean()
@@ -176,13 +172,13 @@ def generate_probabilistic_target(
     target_rate: float = 0.30,
 ) -> Tuple[pd.Series, pd.Series]:
     rng = np.random.default_rng(seed)
-    f = features_df
+    features = features_df
 
-    high_emi = _zscore(f["emi_to_income_ratio"])
-    declining_balance = _zscore(-f["balance_trend_slope"])
-    increasing_salary_delay = _zscore(f["salary_delay_avg"] + 0.4 * f["salary_delay_max"])
+    high_emi = _zscore(features["emi_to_income_ratio"])
+    declining_balance = _zscore(-features["balance_trend_slope"])
+    increasing_salary_delay = _zscore(features["salary_delay_avg"] + 0.4 * features["salary_delay_max"])
     rising_failures = _zscore(
-        f["auto_debit_failure_rate"] + 0.5 * f["max_consecutive_failure_streak"]
+        features["auto_debit_failure_rate"] + 0.5 * features["max_consecutive_failure_streak"]
     )
 
     linear_risk = (
@@ -193,12 +189,12 @@ def generate_probabilistic_target(
     )
     risk_score_raw = 1.0 / (1.0 + np.exp(-linear_risk))
 
-    random_noise = rng.normal(0.0, 0.08, size=len(f))
+    random_noise = rng.normal(0.0, 0.08, size=len(features))
     combined = risk_score_raw + random_noise
     threshold = float(np.quantile(combined, 1.0 - target_rate))
     label = (combined > threshold).astype(int)
 
-    return pd.Series(risk_score_raw, index=f.index), pd.Series(label, index=f.index)
+    return pd.Series(risk_score_raw, index=features.index), pd.Series(label, index=features.index)
 
 
 def build_training_dataset(

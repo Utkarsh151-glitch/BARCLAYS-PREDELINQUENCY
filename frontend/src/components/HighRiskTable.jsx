@@ -7,7 +7,7 @@ export default function HighRiskTable() {
   ];
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl">
+    <div className="app-surface p-4">
 
       <p className="text-xs uppercase tracking-widest text-slate-400 mb-6">
         High Risk Customers

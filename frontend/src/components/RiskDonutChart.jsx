@@ -8,10 +8,10 @@ export default function RiskDonutChart({ summary }) {
     { name: "Low Risk", value: summary.low_risk },
   ];
 
-  const COLORS = ["#f87171", "#fbbf24", "#34d399"];
+  const COLORS = ["#B94A48", "#5B6472", "#2F7D5C"];
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+    <div className="app-surface p-4">
       <h3 className="text-lg font-semibold mb-4">
         Risk Distribution
       </h3>
@@ -23,7 +23,7 @@ export default function RiskDonutChart({ summary }) {
           cy="50%"
           innerRadius={70}
           outerRadius={100}
-          paddingAngle={3}
+          paddingAngle={1}
           dataKey="value"
         >
           {data.map((entry, index) => (

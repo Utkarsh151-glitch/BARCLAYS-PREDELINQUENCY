@@ -1,16 +1,5 @@
-import mlflow
-import pandas as pd
-import numpy as np
-from pyod.models.iforest import IForest
+import math
 
-# Set MLflow tracking URI
-mlflow.set_tracking_uri("sqlite:///ml/mlflow.db")
-
-# Load MLflow model (latest version)
-model = mlflow.sklearn.load_model("models:/PreDelinquencyRiskModel/latest")
-
-# Initialize PyOD anomaly detector
-anomaly_detector = IForest(contamination=0.1)
 
 MODEL_FEATURES = [
     "salary_delay_days",
@@ -19,43 +8,57 @@ MODEL_FEATURES = [
     "upi_lending_txn_count",
     "discretionary_spend_drop_pct",
     "atm_withdrawals_count",
-    "failed_autodebit"
+    "failed_autodebit",
 ]
 
 
+def _clip(value: float, lower: float = 0.0, upper: float = 1.0) -> float:
+    return max(lower, min(upper, value))
+
+
+def _scale(value: float, divisor: float) -> float:
+    return _clip(float(value or 0.0) / divisor)
+
+
+def _legacy_probability(input_data: dict) -> float:
+    pressure = (
+        1.35 * _scale(input_data.get("failed_autodebit"), 4)
+        + 1.15 * _scale(input_data.get("savings_balance_drop_pct"), 70)
+        + 1.05 * _scale(input_data.get("salary_delay_days"), 20)
+        + 0.85 * _scale(input_data.get("utility_payment_delay_days"), 15)
+        + 0.65 * _scale(input_data.get("upi_lending_txn_count"), 12)
+        + 0.55 * _scale(input_data.get("discretionary_spend_drop_pct"), 60)
+        + 0.35 * _scale(input_data.get("atm_withdrawals_count"), 12)
+    )
+    centered = pressure - 2.25
+    return 1.0 / (1.0 + math.exp(-centered))
+
+
+def _anomaly_score(input_data: dict) -> float:
+    normalized = [
+        _scale(input_data.get("salary_delay_days"), 20),
+        _scale(input_data.get("savings_balance_drop_pct"), 70),
+        _scale(input_data.get("utility_payment_delay_days"), 15),
+        _scale(input_data.get("upi_lending_txn_count"), 12),
+        _scale(input_data.get("discretionary_spend_drop_pct"), 60),
+        _scale(input_data.get("atm_withdrawals_count"), 12),
+        _scale(input_data.get("failed_autodebit"), 4),
+    ]
+    return _clip(sum(value * value for value in normalized) / len(normalized))
+
+
 def calculate_risk(input_data: dict):
+    predictive_score = _legacy_probability(input_data)
+    anomaly_score = _anomaly_score(input_data)
+    risk_score = 0.75 * predictive_score + 0.25 * anomaly_score
 
-    # Remove non-model fields
-    model_input = {k: input_data[k] for k in MODEL_FEATURES}
-
-    df = pd.DataFrame([model_input])
-
-    # -------- Predictive Model Score --------
-    predictive_score = float(model.predict_proba(df)[0][1])
-
-    # -------- Anomaly Score --------
-    anomaly_detector.fit(df)
-    anomaly_score = float(anomaly_detector.decision_function(df)[0])
-
-    # Normalize anomaly to 0–1
-    anomaly_score = abs(anomaly_score)
-    anomaly_score = min(anomaly_score / 0.5, 1)
-
-    # -------- Hybrid Risk Score --------
-    risk_score = 0.7 * predictive_score + 0.3 * anomaly_score
-
-    # -------- Policy Override Rules --------
-    override_high = False
-
-    if (
+    override_high = (
         input_data["failed_autodebit"] >= 3
         or input_data["savings_balance_drop_pct"] >= 50
         or input_data["salary_delay_days"] >= 15
         or input_data["upi_lending_txn_count"] >= 10
-    ):
-        override_high = True
+    )
 
-    # -------- Final Risk Classification --------
     if override_high:
         risk_level = "HIGH"
         risk_score = max(risk_score, 0.85)
@@ -66,22 +69,20 @@ def calculate_risk(input_data: dict):
     else:
         risk_level = "LOW"
 
-    # -------- Early Signals --------
     sorted_signals = sorted(
         MODEL_FEATURES,
-        key=lambda x: abs(input_data[x]),
-        reverse=True
+        key=lambda feature: abs(float(input_data.get(feature, 0.0) or 0.0)),
+        reverse=True,
     )[:3]
 
     early_signals = [
         {
             "factor": feature,
-            "raw_value": input_data[feature]
+            "raw_value": input_data[feature],
         }
         for feature in sorted_signals
     ]
 
-    # -------- Recommended Action --------
     if risk_level == "HIGH":
         recommended_action = "Immediate proactive outreach. Offer EMI restructuring or payment holiday."
     elif risk_level == "MEDIUM":
@@ -95,5 +96,5 @@ def calculate_risk(input_data: dict):
         "anomaly_score": round(anomaly_score, 3),
         "risk_level": risk_level,
         "early_signals": early_signals,
-        "recommended_action": recommended_action
+        "recommended_action": recommended_action,
     }

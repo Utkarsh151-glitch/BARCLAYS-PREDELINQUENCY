@@ -4,9 +4,9 @@ export default function AIInsightPanel({ summary }) {
     (summary.high_risk / summary.total_customers) * 100;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+    <div className="app-surface p-4">
       <h3 className="text-lg font-semibold mb-4">
-        AI Risk Intelligence Summary
+        Risk Intelligence Summary
       </h3>
 
       <p className="text-slate-400 text-sm leading-6">

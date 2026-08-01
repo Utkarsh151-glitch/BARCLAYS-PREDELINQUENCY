@@ -8,15 +8,13 @@ export default function RiskSummaryCard({ title, value, type }) {
   };
 
   return (
-    <div className="p-8 rounded-2xl border 
-      bg-slate-900/60 border-slate-800 
-      hover:border-indigo-500/40 transition-all duration-300">
+    <div className="app-surface p-4 transition-colors duration-150">
 
-      <p className="text-xs uppercase tracking-widest text-slate-400">
+      <p className="text-[11px] uppercase tracking-[0.06em] text-slate-400">
         {title}
       </p>
 
-      <h2 className={`text-4xl font-bold mt-4 ${colorMap[type]}`}>
+      <h2 className={`text-2xl font-semibold mt-2 num ${colorMap[type]}`}>
         {value}
       </h2>
 

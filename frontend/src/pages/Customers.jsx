@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getCustomers } from "../services/api";
 import RiskBadge from "../components/common/RiskBadge";
@@ -39,13 +38,13 @@ export default function Customers() {
   if (loading) return <div className="text-slate-400">Loading customers...</div>;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight gradient-text">Customer Risk Registry</h1>
         <p className="text-slate-400 mt-1">Sortable model-scored customer registry for analyst workflows.</p>
       </div>
 
-      <section className="app-surface p-4">
+      <section className="app-surface p-3">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -53,14 +52,14 @@ export default function Customers() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customer_id"
-            className="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+            className="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-indigo-500"
             />
           </div>
 
           <select
             value={riskFilter}
             onChange={(e) => setRiskFilter(e.target.value)}
-            className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-indigo-500"
+            className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Risk Levels</option>
             <option value="HIGH">High</option>
@@ -68,7 +67,7 @@ export default function Customers() {
             <option value="LOW">Low</option>
           </select>
 
-          <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2">
+          <div className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-1.5">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
               <span>Minimum Risk Score</span>
               <span>{minScore.toFixed(2)}</span>
@@ -86,7 +85,7 @@ export default function Customers() {
 
           <button
             onClick={() => setSortDesc((s) => !s)}
-            className="inline-flex items-center justify-center gap-2 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-sm hover:border-indigo-500 transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm hover:border-indigo-500 transition-colors"
           >
             <SlidersHorizontal size={15} />
             Sort Risk: {sortDesc ? "High to Low" : "Low to High"}
@@ -108,11 +107,8 @@ export default function Customers() {
           </thead>
           <tbody>
             {filtered.map((row, idx) => (
-              <motion.tr
+              <tr
                 key={row.customer_id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: Math.min(idx * 0.01, 0.2) }}
                 onClick={() => navigate(`/customers/${row.customer_id}`)}
                 className={`cursor-pointer border-b border-slate-700 hover:bg-indigo-500/10 transition-colors ${
                   row.risk_level === "HIGH"
@@ -122,11 +118,11 @@ export default function Customers() {
                       : "border-l-2 border-l-emerald-500/70"
                 }`}
               >
-                <td className="px-4 py-3 font-semibold">{row.customer_id}</td>
+                <td className="px-4 py-3 font-semibold num">{row.customer_id}</td>
                 <td className="px-4 py-3">
                   <div className="w-40">
                     <div className="flex justify-between text-xs mb-1">
-                      <span>{row.risk_score.toFixed(4)}</span>
+                      <span className="num">{row.risk_score.toFixed(4)}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-700">
                       <div
@@ -143,14 +139,14 @@ export default function Customers() {
                   </div>
                 </td>
                 <td className="px-4 py-3"><RiskBadge level={row.risk_level} /></td>
-                <td className="px-4 py-3">{row.emi_to_income_ratio.toFixed(3)}</td>
-                <td className="px-4 py-3">{Math.round(row.balance_trend_slope).toLocaleString()}</td>
-                <td className="px-4 py-3">{row.auto_debit_failure_rate.toFixed(3)}</td>
-              </motion.tr>
+                <td className="px-4 py-3 num">{row.emi_to_income_ratio.toFixed(3)}x</td>
+                <td className="px-4 py-3 num">{Math.round(row.balance_trend_slope).toLocaleString()} INR/mo</td>
+                <td className="px-4 py-3 num">{row.auto_debit_failure_rate.toFixed(3)}/mo</td>
+              </tr>
             ))}
           </tbody>
         </table>
       </section>
-    </motion.div>
+    </div>
   );
 }

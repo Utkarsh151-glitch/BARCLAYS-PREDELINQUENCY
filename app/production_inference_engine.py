@@ -199,6 +199,20 @@ class ProductionInferenceEngine:
             "top_factors": top_factors,
         }
 
+    def get_portfolio_summary(self) -> Dict:
+        counts = self.scored_df["risk_level"].value_counts().to_dict()
+        return {
+            "total_customers": int(len(self.scored_df)),
+            "high_risk": int(counts.get("HIGH", 0)),
+            "medium_risk": int(counts.get("MEDIUM", 0)),
+            "low_risk": int(counts.get("LOW", 0)),
+        }
+
+    def get_alerts(self, limit: int = 100) -> List[Dict]:
+        high_risk = self.scored_df[self.scored_df["risk_level"] == "HIGH"]
+        high_risk = high_risk.sort_values("risk_score", ascending=False).head(max(1, int(limit)))
+        return [self._pythonize_record(row) for row in high_risk.to_dict(orient="records")]
+
 
 _ENGINE = ProductionInferenceEngine()
 
@@ -213,3 +227,11 @@ def get_customer(customer_id: str) -> Optional[Dict]:
 
 def get_customer_explanation(customer_id: str) -> Optional[Dict]:
     return _ENGINE.get_customer_explanation(customer_id)
+
+
+def get_portfolio_summary() -> Dict:
+    return _ENGINE.get_portfolio_summary()
+
+
+def get_alerts(limit: int = 100) -> List[Dict]:
+    return _ENGINE.get_alerts(limit=limit)

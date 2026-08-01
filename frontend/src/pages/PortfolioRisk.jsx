@@ -33,9 +33,9 @@ export default function PortfolioRisk() {
     () =>
       summary
         ? [
-            { name: "High", value: summary.high_risk, color: "#EF4444" },
-            { name: "Medium", value: summary.medium_risk, color: "#F59E0B" },
-            { name: "Low", value: summary.low_risk, color: "#10B981" },
+            { name: "High", value: summary.high_risk, color: "#B94A48" },
+            { name: "Medium", value: summary.medium_risk, color: "#5B6472" },
+            { name: "Low", value: summary.low_risk, color: "#2F7D5C" },
           ]
         : [],
     [summary]
@@ -44,7 +44,7 @@ export default function PortfolioRisk() {
   if (!summary) return <div className="text-slate-400">Loading portfolio risk analytics...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight gradient-text">Portfolio Risk Analytics</h1>
         <p className="text-slate-400 mt-2">
@@ -53,22 +53,22 @@ export default function PortfolioRisk() {
       </div>
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <p className="text-sm text-slate-400">Portfolio Risk Index</p>
-          <p className="text-5xl font-semibold mt-3">{portfolioRiskIndex(summary).toFixed(1)}</p>
+          <p className="text-3xl font-semibold mt-2 num">{portfolioRiskIndex(summary).toFixed(1)} pts</p>
         </div>
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <p className="text-sm text-slate-400">High Risk Exposure</p>
-          <p className="text-5xl font-semibold mt-3">{Number(summary.high_risk || 0).toLocaleString()}</p>
+          <p className="text-3xl font-semibold mt-2 num">{Number(summary.high_risk || 0).toLocaleString()} customers</p>
         </div>
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <p className="text-sm text-slate-400">AUC</p>
-          <p className="text-5xl font-semibold mt-3">{Number(metrics?.auc || 0).toFixed(4)}</p>
+          <p className="text-3xl font-semibold mt-2 num">{Number(metrics?.auc || 0).toFixed(4)}</p>
         </div>
       </section>
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <div className="panel-surface p-5">
+        <div className="panel-surface p-4">
           <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -80,10 +80,10 @@ export default function PortfolioRisk() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "#182238",
-                    border: "1px solid #334155",
-                    borderRadius: 10,
-                    color: "#e2e8f0",
+                    background: "#FFFFFF",
+                    border: "1px solid #E3E7ED",
+                    borderRadius: 4,
+                    color: "#1F2933",
                   }}
                 />
               </PieChart>
@@ -91,30 +91,30 @@ export default function PortfolioRisk() {
           </div>
         </div>
 
-        <div className="panel-surface p-5 xl:col-span-2">
+        <div className="panel-surface p-4 xl:col-span-2">
           <h3 className="text-lg font-semibold mb-4">Monthly Risk Index Trend</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="month" stroke="#94A3B8" />
-                <YAxis stroke="#94A3B8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E3E7ED" />
+                <XAxis dataKey="month" stroke="#5B6472" />
+                <YAxis stroke="#5B6472" />
                 <Tooltip
                   contentStyle={{
-                    background: "#182238",
-                    border: "1px solid #334155",
-                    borderRadius: 10,
-                    color: "#e2e8f0",
+                    background: "#FFFFFF",
+                    border: "1px solid #E3E7ED",
+                    borderRadius: 4,
+                    color: "#1F2933",
                   }}
                 />
-                <Area type="monotone" dataKey="risk_index" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.15} />
+                <Area type="monotone" dataKey="risk_index" stroke="#123C69" fill="#123C69" fillOpacity={0.08} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
       </section>
 
-      <section className="panel-surface p-5">
+      <section className="panel-surface p-4">
         <h3 className="text-lg font-semibold mb-4">Top Risk Drivers</h3>
         <FeatureImportanceChart data={metrics?.top_5_feature_importance || []} height={280} />
       </section>

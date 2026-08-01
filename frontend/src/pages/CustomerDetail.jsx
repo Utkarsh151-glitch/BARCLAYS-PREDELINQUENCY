@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import {
   ResponsiveContainer,
@@ -105,26 +104,26 @@ export default function CustomerDetail() {
   if (!customer) return <div className="text-rose-600">Customer not found.</div>;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
+    <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight gradient-text">Customer Detail: {customer.customer_id}</h1>
         <p className="text-slate-400 mt-1">Model-derived risk profile with engineered feature diagnostics.</p>
       </header>
 
-      <section className="app-surface p-5">
+      <section className="app-surface p-4">
         <h2 className="font-semibold mb-4">Risk Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <div className="flex justify-center">
             <div
               className="w-44 h-44 rounded-full flex items-center justify-center"
               style={{
-                background: `conic-gradient(#6366F1 ${scorePct}%, #1f2937 ${scorePct}% 100%)`,
+                background: `conic-gradient(#123C69 ${scorePct}%, #E3E7ED ${scorePct}% 100%)`,
               }}
             >
-              <div className="w-32 h-32 rounded-full bg-[#111a2d] flex items-center justify-center text-center border border-slate-700">
+              <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center text-center border border-slate-700">
                 <div>
                   <p className="text-xs text-slate-400">Risk Score</p>
-                  <p className="text-2xl font-semibold text-slate-100">{fmt(customer.risk_score, 4)}</p>
+                  <p className="text-2xl font-semibold text-slate-100 num">{fmt(customer.risk_score, 4)}</p>
                 </div>
               </div>
             </div>
@@ -141,40 +140,40 @@ export default function CustomerDetail() {
         </div>
       </section>
 
-      <section className="app-surface p-5">
+      <section className="app-surface p-4">
         <h2 className="font-semibold mb-4">Financial Stability Grid</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-          <MetricTile label="EMI to Income Ratio" value={fmt(customer.emi_to_income_ratio, 3)} hint={featureInterpretation("emi_to_income_ratio", customer.emi_to_income_ratio)} />
-          <MetricTile label="Salary Trend" value={Math.round(customer.salary_trend_slope).toLocaleString()} hint={featureInterpretation("salary_trend_slope", customer.salary_trend_slope)} />
-          <MetricTile label="Balance Trend" value={Math.round(customer.balance_trend_slope).toLocaleString()} hint={featureInterpretation("balance_trend_slope", customer.balance_trend_slope)} />
-          <MetricTile label="Failure Rate" value={fmt(customer.auto_debit_failure_rate, 3)} hint={featureInterpretation("auto_debit_failure_rate", customer.auto_debit_failure_rate)} />
-          <MetricTile label="Utility Delay Avg" value={fmt(customer.utility_payment_delay_avg, 2)} hint={featureInterpretation("utility_payment_delay_avg", customer.utility_payment_delay_avg)} />
-          <MetricTile label="Volatility" value={Math.round(customer.balance_volatility).toLocaleString()} hint="Balance fluctuation amplitude" />
-          <MetricTile label="Min Balance (3M)" value={Math.round(customer.min_balance_last_3m).toLocaleString()} hint="Lowest average liquidity in recent quarter" />
+          <MetricTile label="EMI to Income Ratio" value={`${fmt(customer.emi_to_income_ratio, 3)}x`} hint={featureInterpretation("emi_to_income_ratio", customer.emi_to_income_ratio)} />
+          <MetricTile label="Salary Trend" value={`${Math.round(customer.salary_trend_slope).toLocaleString()} INR/mo`} hint={featureInterpretation("salary_trend_slope", customer.salary_trend_slope)} />
+          <MetricTile label="Balance Trend" value={`${Math.round(customer.balance_trend_slope).toLocaleString()} INR/mo`} hint={featureInterpretation("balance_trend_slope", customer.balance_trend_slope)} />
+          <MetricTile label="Failure Rate" value={`${fmt(customer.auto_debit_failure_rate, 3)}/mo`} hint={featureInterpretation("auto_debit_failure_rate", customer.auto_debit_failure_rate)} />
+          <MetricTile label="Utility Delay Avg" value={`${fmt(customer.utility_payment_delay_avg, 2)} days`} hint={featureInterpretation("utility_payment_delay_avg", customer.utility_payment_delay_avg)} />
+          <MetricTile label="Volatility" value={`${Math.round(customer.balance_volatility).toLocaleString()} INR`} hint="Balance fluctuation amplitude" />
+          <MetricTile label="Min Balance (3M)" value={`${Math.round(customer.min_balance_last_3m).toLocaleString()} INR`} hint="Lowest average liquidity in recent quarter" />
           <MetricTile label="Bounce Proxy" value={fmt(customer.bounce_proxy, 2)} hint={featureInterpretation("bounce_proxy", customer.bounce_proxy)} />
         </div>
       </section>
 
-      <section className="app-surface p-5">
+      <section className="app-surface p-4">
         <h2 className="font-semibold mb-4">Behavioral Trend Charts</h2>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <ChartPanel title="Salary Trend" data={series} dataKey="salary" stroke="#6366F1" />
-          <ChartPanel title="Balance Trend" data={series} dataKey="balance" stroke="#10B981" />
-          <ChartPanel title="Spend Trend" data={series} dataKey="spend" stroke="#FBBF24" />
+          <ChartPanel title="Salary Trend" data={series} dataKey="salary" stroke="#123C69" />
+          <ChartPanel title="Balance Trend" data={series} dataKey="balance" stroke="#2F7D5C" />
+          <ChartPanel title="Spend Trend" data={series} dataKey="spend" stroke="#5B6472" />
         </div>
       </section>
 
-      <section className="app-surface p-5">
+      <section className="app-surface p-4">
         <h2 className="font-semibold mb-4">Feature Impact</h2>
         <div className="space-y-2">
           {featureImpacts.map((f) => (
             <div key={f.feature} className="flex items-center justify-between border border-slate-700 rounded-lg px-3 py-2 bg-slate-900/70">
               <div>
                 <div className="font-medium">{f.feature}</div>
-                <div className="text-xs text-slate-400">value: {fmt(f.value, 3)} | importance: {fmt(f.importance, 4)}</div>
+                <div className="text-xs text-slate-400 num">value: {fmt(f.value, 3)} | importance: {fmt(f.importance, 4)}</div>
               </div>
               <div className="text-right">
-                <div className="font-semibold">{fmt(f.impact, 4)}</div>
+                <div className="font-semibold num">{fmt(f.impact, 4)}</div>
                 <span className={`text-xs ${f.contributing ? "text-rose-400" : "text-slate-400"}`}>
                   {f.contributing ? "Contributing" : "Minor"}
                 </span>
@@ -183,7 +182,7 @@ export default function CustomerDetail() {
           ))}
         </div>
       </section>
-    </motion.div>
+    </div>
   );
 }
 
@@ -191,7 +190,7 @@ function MetricTile({ label, value, hint }) {
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-3">
       <p className="text-xs text-slate-400">{label}</p>
-      <p className="text-xl font-semibold mt-1 text-slate-100">{value}</p>
+      <p className="text-xl font-semibold mt-1 text-slate-100 num">{value}</p>
       <p className="text-xs text-slate-400 mt-2 leading-5">{hint}</p>
     </div>
   );
@@ -204,15 +203,15 @@ function ChartPanel({ title, data, dataKey, stroke }) {
       <div className="h-[180px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="month" stroke="#94A3B8" />
-            <YAxis stroke="#94A3B8" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E3E7ED" />
+            <XAxis dataKey="month" stroke="#5B6472" />
+            <YAxis stroke="#5B6472" />
             <Tooltip
               contentStyle={{
-                background: "#182238",
-                border: "1px solid #334155",
-                borderRadius: 10,
-                color: "#e2e8f0",
+                background: "#FFFFFF",
+                border: "1px solid #E3E7ED",
+                borderRadius: 4,
+                color: "#1F2933",
               }}
             />
             <Line type="monotone" dataKey={dataKey} stroke={stroke} strokeWidth={2.4} dot={{ r: 2 }} />
