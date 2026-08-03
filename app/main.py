@@ -1,3 +1,12 @@
+import sys
+from pathlib import Path
+
+# Ensure the project root is on sys.path so root-level modules
+# (e.g. feature_engineering) can be imported when deployed on Render.
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 from datetime import datetime
 import random
 

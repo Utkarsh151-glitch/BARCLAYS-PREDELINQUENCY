@@ -7,8 +7,11 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.11
       - key: AWS_ENABLED
         value: false
+      - key: PYTHONPATH
+        value: /opt/render/project/src
       - key: ALLOWED_ORIGINS
-        value: http://localhost:5173
+        value: "*"
+
