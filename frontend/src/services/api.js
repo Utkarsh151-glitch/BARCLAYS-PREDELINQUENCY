@@ -1,4 +1,4 @@
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://barclays-predelinquency.onrender.com").replace(/\/$/, "");
 
 export async function analyzeCustomer(payload) {
   const response = await fetch(`${BASE_URL}/analyze`, {
