@@ -32,6 +32,8 @@ export default function Dashboard() {
         ]);
         setCustomers((customerResp || []).map(normalizeCustomer));
         setMetrics(metricsResp);
+      } catch (err) {
+        console.error("Dashboard load error:", err);
       } finally {
         setLoading(false);
       }
