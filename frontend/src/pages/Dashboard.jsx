@@ -10,11 +10,12 @@ import RiskBadge from "../components/common/RiskBadge";
 import { normalizeCustomer, percentage, summarizeCustomers } from "../utils/riskTransforms";
 
 const COLORS = ["#B94A48", "#5B6472", "#2F7D5C"];
+// Hex values: index.css re-themes several bg-* utility classes (bg-slate-700 becomes the card surface colour).
 const PERF_COLORS = {
-  AUC: "bg-indigo-500",
-  Precision: "bg-slate-700",
-  Recall: "bg-emerald-500",
-  F1: "bg-amber-400",
+  AUC: "#123C69",
+  Precision: "#5B6472",
+  Recall: "#2F7D5C",
+  F1: "#AAB2BD",
 };
 
 export default function Dashboard() {
@@ -217,7 +218,7 @@ export default function Dashboard() {
 
 function PerfBar({ label, value }) {
   const pct = Math.max(0, Math.min(100, value * 100));
-  const barColor = PERF_COLORS[label] || "bg-indigo-500";
+  const barColor = PERF_COLORS[label] || "#123C69";
   return (
     <div>
       <div className="flex items-center justify-between text-sm mb-1">
@@ -229,7 +230,8 @@ function PerfBar({ label, value }) {
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.18 }}
-          className={`h-2 rounded-full ${barColor}`}
+          className="h-2 rounded-full"
+          style={{ backgroundColor: barColor }}
         />
       </div>
     </div>
