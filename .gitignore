@@ -22,3 +22,10 @@ __pycache__/
 
 # Logs
 *.log
+
+# MLflow run artifacts (local experiments)
+ml/mlruns/
+
+# Derived data: rebuild with `python feature_engineering.py --with-target` / `python ml/train_model.py`
+data/predelinquency_features.csv
+data/predelinquency_training_data.csv
