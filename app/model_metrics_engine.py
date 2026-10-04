@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Dict, List
 
@@ -13,6 +14,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 MODEL_PATH = ROOT_DIR / "ml" / "risk_model.pkl"
 TRAINING_DATA_PATH = ROOT_DIR / "data" / "predelinquency_training_data.csv"
 RAW_DATA_PATH = ROOT_DIR / "data" / "predelinquency_risk_dataset.csv"
+METRICS_PATH = ROOT_DIR / "ml" / "metrics.json"
 
 
 def _load_model():
@@ -66,20 +68,6 @@ def _feature_importance(model, feature_names: List[str]) -> List[Dict]:
 
 
 def get_model_metrics() -> Dict:
-    # Hardcoded metrics for the dashboard to prevent Out of Memory crashes.
-    # The ML model is fully trained offline, so computing this on the fly
-    # on the free tier is unnecessary and consumes too much RAM.
-    return {
-        "auc": 0.8521,
-        "precision": 0.7834,
-        "recall": 0.8215,
-        "f1": 0.8020,
-        "top_5_feature_importance": [
-            {"feature": "emi_to_income_ratio", "importance": 0.284},
-            {"feature": "balance_trend_slope", "importance": 0.215},
-            {"feature": "salary_delay_avg", "importance": 0.182},
-            {"feature": "auto_debit_failure_rate", "importance": 0.151},
-            {"feature": "max_consecutive_failure_streak", "importance": 0.103}
-        ],
-        "evaluated_rows": 100000,
-    }
+    # Metrics are computed offline by ml/evaluate_model.py on the hold-out split and stored in
+    # ml/metrics.json, so the endpoint stays cheap on the free tier without hard-coding numbers.
+    return json.loads(METRICS_PATH.read_text())
