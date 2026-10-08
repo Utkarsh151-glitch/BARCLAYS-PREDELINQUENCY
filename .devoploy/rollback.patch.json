@@ -1,9 +1,0 @@
-{
-  "createdAt": "2026-04-01T19:03:44.263Z",
-  "entries": [
-    {
-      "filePath": "frontend\\vercel.json",
-      "originalContent": "{\r\n  \"version\": 2,\r\n  \"builds\": [\r\n    {\r\n      \"src\": \"index.js\",\r\n      \"use\": \"@vercel/node\"\r\n    }\r\n  ],\r\n  \"routes\": [\r\n    {\r\n      \"src\": \"/(.*)\",\r\n      \"dest\": \"/index.js\"\r\n    }\r\n  ]\r\n}\r\n"
-    }
-  ]
-}

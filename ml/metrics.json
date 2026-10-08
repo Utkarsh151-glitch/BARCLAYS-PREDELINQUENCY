@@ -1,0 +1,30 @@
+{
+  "auc": 0.9968,
+  "precision": 0.9047,
+  "recall": 0.9825,
+  "f1": 0.942,
+  "top_5_feature_importance": [
+    {
+      "feature": "emi_to_income_ratio",
+      "importance": 0.3255
+    },
+    {
+      "feature": "balance_trend_slope",
+      "importance": 0.2169
+    },
+    {
+      "feature": "max_consecutive_failure_streak",
+      "importance": 0.0962
+    },
+    {
+      "feature": "auto_debit_failure_rate",
+      "importance": 0.0928
+    },
+    {
+      "feature": "salary_delay_max",
+      "importance": 0.0748
+    }
+  ],
+  "evaluated_rows": 20000,
+  "labels": "simulated"
+}
